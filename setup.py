@@ -6,6 +6,7 @@
 """
 
 from setuptools import setup, find_namespace_packages
+import os
 import platform
 
 DEPENDENCY_LINKS = []
@@ -15,7 +16,17 @@ if platform.system() == "Windows":
 
 def fetch_requirements(filename):
     with open(filename) as f:
-        return [ln.strip() for ln in f.read().split("\n")]
+        return [
+            ln.strip()
+            for ln in f.read().split("\n")
+            if ln.strip() and not ln.strip().startswith("#")
+        ]
+
+
+def read_readme():
+    if not os.path.exists("README.md"):
+        return ""
+    return open("README.md", "r", encoding="utf-8").read()
 
 
 setup(
@@ -23,13 +34,13 @@ setup(
     version="1.0.1",
     author="Dongxu Li, Junnan Li, Hung Le, Guangsen Wang, Silvio Savarese, Steven C.H. Hoi",
     description="LAVIS - A One-stop Library for Language-Vision Intelligence",
-    long_description=open("README.md", "r", encoding="utf-8").read(),
+    long_description=read_readme(),
     long_description_content_type="text/markdown",
     keywords="Vision-Language, Multimodal, Image Captioning, Generative AI, Deep Learning, Library, PyTorch",
     license="3-Clause BSD",
     packages=find_namespace_packages(include="lavis.*"),
     install_requires=fetch_requirements("requirements.txt"),
-    python_requires=">=3.7.0",
+    python_requires=">=3.12.0",
     include_package_data=True,
     dependency_links=DEPENDENCY_LINKS,
     zip_safe=False,

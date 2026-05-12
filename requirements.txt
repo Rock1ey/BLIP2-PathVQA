@@ -1,39 +1,23 @@
-contexttimer
-decord
-diffusers<=0.16.0
-einops>=0.4.1
-fairscale==0.4.4
-ftfy
-iopath
-ipython
-omegaconf
-opencv-python-headless==4.5.5.64
-opendatasets
-packaging
-pandas
-plotly
-pre-commit
-pycocoevalcap
-pycocotools
-python-magic
-scikit-image
-sentencepiece
-spacy
-streamlit
-timm==0.4.12
-torch>=1.10.0
-torchvision
-tqdm
-transformers==4.33.2
-webdataset
-wheel
-torchaudio
-soundfile
-moviepy
-nltk
-peft
+# Minimal dependency set for BLIP-2 + PathVQA on Python 3.12 / PyTorch 2.8.
+# The AutoDL image should already provide torch/torchvision CUDA 12.8 wheels.
+# These constraints verify the expected major/minor versions without requiring
+# the older LAVIS dependency set.
 
-easydict==1.9
-pyyaml_env_tag==0.1
-open3d==0.13.0
-h5py
+contexttimer>=0.3.3
+einops>=0.7.0
+iopath>=0.1.10
+numpy>=1.26.0,<2.0
+omegaconf>=2.3.0
+packaging>=23.2
+pandas>=2.1.0
+Pillow>=10.0.0
+pyyaml_env_tag>=0.1
+sentencepiece>=0.2.0
+timm>=0.9.16,<1.0
+tokenizers>=0.15.2
+torch>=2.8,<2.9
+torchvision>=0.23,<0.24
+tqdm>=4.66.0
+transformers>=4.38.2,<4.46
+webdataset>=0.2.86
+wheel>=0.42.0

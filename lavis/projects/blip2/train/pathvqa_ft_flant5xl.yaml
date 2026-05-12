@@ -5,7 +5,7 @@ model:
   use_grad_checkpoint: True
   freeze_vit: True
   max_txt_len: 128
-  apply_lemmatizer: True
+  apply_lemmatizer: False
 
 datasets:
   path_vqa:

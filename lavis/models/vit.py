@@ -19,7 +19,11 @@ from timm.models.registry import register_model
 from timm.models.layers import trunc_normal_, DropPath
 from timm.models.helpers import named_apply, adapt_input_conv
 
-from fairscale.nn.checkpoint.checkpoint_activations import checkpoint_wrapper
+try:
+    from fairscale.nn.checkpoint.checkpoint_activations import checkpoint_wrapper
+except ImportError:
+    def checkpoint_wrapper(module):
+        return module
 from lavis.models.base_model import BaseEncoder
 
 

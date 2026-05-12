@@ -7,7 +7,11 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from fairscale.nn.checkpoint.checkpoint_activations import checkpoint_wrapper
+try:
+    from fairscale.nn.checkpoint.checkpoint_activations import checkpoint_wrapper
+except ImportError:
+    def checkpoint_wrapper(module):
+        return module
 
 from lavis.models.eva_vit import convert_weights_to_fp16
 from lavis.common.dist_utils import download_cached_file
