@@ -1,0 +1,17 @@
+datasets:
+  path_vqa:
+    data_type: images
+
+    build_info:
+      annotations:
+        train:
+          storage:
+            - /root/autodl-tmp/pvqa/qas/train_vqa.pkl
+        val:
+          storage:
+            - /root/autodl-tmp/pvqa/qas/val_vqa.pkl
+        test:
+          storage:
+            - /root/autodl-tmp/pvqa/qas/test_vqa.pkl
+      images:
+        storage: /root/autodl-tmp/pvqa/images

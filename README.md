@@ -1,3 +1,6 @@
+本项目基于 LAVIS (BLIP2) 开源仓库二次修改，仅用于学术科研与实验研究使用。
+原仓库地址：https://github.com/salesforce/LAVIS
+
 <p align="center">
     <br>
     <img src="docs/_static/logo_final.png" width="400"/>

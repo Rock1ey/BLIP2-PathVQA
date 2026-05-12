@@ -158,22 +158,3 @@ debug*/
 
 cache/
 
-# experiment data, checkpoints, and model weights
-data/
-datasets/
-pvqa/
-PathVQA/
-checkpoints/
-weights/
-pretrained/
-wandb/
-runs/
-*.ckpt
-*.pth
-*.pt
-*.bin
-*.safetensors
-*.npy
-*.pkl
-*.h5
-*.hdf5
