@@ -11,7 +11,7 @@ datasets:
   path_vqa:
     vis_processor:
       train:
-        name: "blip_image_train"
+        name: "blip2_image_train"
         image_size: 224
       eval:
         name: "blip_image_eval"

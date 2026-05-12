@@ -9,7 +9,6 @@ import re
 
 from lavis.common.registry import registry
 from lavis.processors.base_processor import BaseProcessor
-from lavis.processors.randaugment import RandomAugment
 from omegaconf import OmegaConf
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
@@ -107,6 +106,7 @@ class BlipImageTrainProcessor(BlipImageBaseProcessor):
         self, image_size=384, mean=None, std=None, min_scale=0.5, max_scale=1.0
     ):
         super().__init__(mean=mean, std=std)
+        from lavis.processors.randaugment import RandomAugment
 
         self.transform = transforms.Compose(
             [

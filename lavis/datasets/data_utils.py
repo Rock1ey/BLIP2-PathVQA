@@ -11,23 +11,23 @@ import os
 import random as rnd
 import tarfile
 import zipfile
-import cv2
 
-import decord
 import webdataset as wds
 import numpy as np
 import torch
 from torch.utils.data.dataset import IterableDataset, ChainDataset
-from decord import VideoReader
 from lavis.common.registry import registry
 from lavis.datasets.datasets.base_dataset import ConcatDataset
 from tqdm import tqdm
 
-decord.bridge.set_bridge("torch")
 MAX_INT = registry.get("MAX_INT")
 
 
 def load_video(video_path, n_frms=MAX_INT, height=-1, width=-1, sampling="uniform"):
+    import decord
+    from decord import VideoReader
+
+    decord.bridge.set_bridge("torch")
     vr = VideoReader(uri=video_path, height=height, width=width)
 
     vlen = len(vr)
@@ -287,6 +287,8 @@ def save_frames_grid(img_array, out_path):
 
 
 def uniform_frame_sampling(video_path, num_frames, target_height, target_width, start_time=None, end_time=None):
+    import cv2
+
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
@@ -314,6 +316,8 @@ def uniform_frame_sampling(video_path, num_frames, target_height, target_width, 
 
 
 def head_tail_frame_sampling(video_path, num_frames, target_height, target_width, start_time=None, end_time=None):
+    import cv2
+
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
