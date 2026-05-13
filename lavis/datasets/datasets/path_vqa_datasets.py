@@ -22,13 +22,28 @@ from PIL import Image
 from lavis.datasets.datasets.base_dataset import BaseDataset
 
 
+YES_NO_PROMPT = """Answer the medical question according to the pathology image.
+Please answer only "yes" or "no".
+
+Question: {question}
+Answer:"""
+
+OTHER_PROMPT = """Answer the medical visual question according to the pathology image.
+Provide a short and concise medical answer.
+
+Question: {question}
+Answer:"""
+
+
 def _load_pathvqa_annotations(ann_paths):
     annotations = []
     for ann_path in ann_paths:
         with open(ann_path, "rb") as f:
             loaded = pickle.load(f)
         if isinstance(loaded, list):
-            annotations.extend(loaded)
+            annotations.extend(
+                ann for ann in loaded if ann.get("answer_type") != "number"
+            )
         else:
             raise TypeError(f"PathVQA annotation must be a list, got {type(loaded)}.")
     return annotations
@@ -44,6 +59,22 @@ def _answers_from_label(label):
     if isinstance(label, str):
         return [label]
     return [""]
+
+
+def _normalize_yes_no_answer(answer):
+    answer = answer.strip().lower()
+    if answer.startswith("yes"):
+        return "yes"
+    if answer.startswith("no"):
+        return "no"
+    return answer
+
+
+def _format_prompt(question, answer_type):
+    question = question.strip()
+    if answer_type == "yes/no":
+        return YES_NO_PROMPT.format(question=question)
+    return OTHER_PROMPT.format(question=question)
 
 
 class PathVQADataset(BaseDataset):
@@ -64,16 +95,21 @@ class PathVQADataset(BaseDataset):
         image = Image.open(self._image_path(ann["img_id"])).convert("RGB")
         image = self.vis_processor(image)
 
-        question = self.text_processor(ann["sent"])
+        raw_question = ann["sent"].strip()
+        answer_type = ann.get("answer_type", "other")
         answers = _answers_from_label(ann.get("label", {}))
+        if answer_type == "yes/no":
+            answers = [_normalize_yes_no_answer(answer) for answer in answers]
 
         return {
             "image": image,
-            "text_input": question,
+            "text_input": _format_prompt(raw_question, answer_type),
             "text_output": random.choice(answers),
             "answers": answers,
             "weights": [1.0] * len(answers),
             "answer": answers[0],
+            "answer_type": answer_type,
+            "raw_question": raw_question,
             "question_id": ann["question_id"],
             "instance_id": ann["instance_id"],
         }
@@ -86,13 +122,18 @@ class PathVQAEvalDataset(PathVQADataset):
         image = Image.open(self._image_path(ann["img_id"])).convert("RGB")
         image = self.vis_processor(image)
 
-        question = self.text_processor(ann["sent"])
+        raw_question = ann["sent"].strip()
+        answer_type = ann.get("answer_type", "other")
         answers = _answers_from_label(ann.get("label", {}))
+        if answer_type == "yes/no":
+            answers = [_normalize_yes_no_answer(answer) for answer in answers]
 
         return {
             "image": image,
-            "text_input": question,
+            "text_input": _format_prompt(raw_question, answer_type),
             "answer": answers[0],
+            "answer_type": answer_type,
+            "raw_question": raw_question,
             "question_id": ann["question_id"],
             "instance_id": ann["instance_id"],
         }

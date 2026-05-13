@@ -8,7 +8,10 @@
 import logging
 import json
 import os
+import re
+import string
 import torch
+from collections import Counter
 from tqdm import tqdm
 
 from lavis.common.utils import is_convertible_to_int
@@ -399,6 +402,157 @@ class GQATask(VQATask):
         with open(
             os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
         ) as f:
+            f.write(json.dumps(metrics) + "\n")
+
+        logging.info(metrics)
+
+        return metrics
+
+
+@registry.register_task("path_vqa")
+class PathVQATask(VQATask):
+    def build_datasets(self, cfg):
+        return BaseTask.build_datasets(self, cfg)
+
+    def valid_step(self, model, samples):
+        answers = model.predict_answers(
+            samples=samples,
+            answer_list=self.answer_list,
+            inference_method=self.inference_method,
+            num_beams=self.num_beams,
+            max_len=self.max_len,
+            min_len=self.min_len,
+            num_ans_candidates=self.num_ans_candidates,
+            prompt="",
+        )
+
+        pred_qa_pairs = []
+        question_ids = samples["question_id"]
+        gt_answers = samples["answer"]
+        answer_types = samples["answer_type"]
+
+        for pred_answer, ques_id, gt_answer, answer_type in zip(
+            answers, question_ids, gt_answers, answer_types
+        ):
+            ques_id = int(ques_id.item()) if isinstance(ques_id, torch.Tensor) else ques_id
+            pred_qa_pairs.append(
+                {
+                    "question_id": ques_id,
+                    "pred_ans": pred_answer,
+                    "gt_ans": gt_answer,
+                    "answer_type": answer_type,
+                }
+            )
+
+        return pred_qa_pairs
+
+    def after_evaluation(self, val_result, split_name, **kwargs):
+        result_file = self.save_result(
+            val_result,
+            result_dir=registry.get_path("result_dir"),
+            filename=f"{split_name}_vqa_result",
+            remove_duplicate="question_id",
+        )
+
+        return self._report_metrics(result_file=result_file)
+
+    @staticmethod
+    def _normalize_text(text):
+        text = text.lower()
+        text = "".join(ch if ch not in string.punctuation else " " for ch in text)
+        text = re.sub(r"\b(a|an|the)\b", " ", text)
+        return " ".join(text.split())
+
+    @classmethod
+    def _token_f1(cls, pred, gt):
+        pred_tokens = cls._normalize_text(pred).split()
+        gt_tokens = cls._normalize_text(gt).split()
+
+        if len(pred_tokens) == 0 and len(gt_tokens) == 0:
+            return 1.0
+        if len(pred_tokens) == 0 or len(gt_tokens) == 0:
+            return 0.0
+
+        common = Counter(pred_tokens) & Counter(gt_tokens)
+        num_same = sum(common.values())
+        if num_same == 0:
+            return 0.0
+
+        precision = num_same / len(pred_tokens)
+        recall = num_same / len(gt_tokens)
+        return 2 * precision * recall / (precision + recall)
+
+    @classmethod
+    def _normalized_em(cls, pred, gt):
+        return float(cls._normalize_text(pred) == cls._normalize_text(gt))
+
+    @staticmethod
+    def _normalize_yes_no(text):
+        normalized = text.strip().lower()
+        normalized = normalized.strip(string.whitespace + string.punctuation)
+        if normalized.startswith("yes"):
+            return "yes"
+        if normalized.startswith("no"):
+            return "no"
+        return None
+
+    @dist_utils.main_process
+    def _report_metrics(self, result_file):
+        results = json.load(open(result_file, "r"))
+
+        yes_no_total = 0
+        yes_no_correct = 0
+        true_positive = 0
+        false_positive = 0
+        false_negative = 0
+
+        other_total = 0
+        other_f1_sum = 0.0
+        other_em_sum = 0.0
+
+        for res in results:
+            answer_type = res["answer_type"]
+            pred = res["pred_ans"]
+            gt = res["gt_ans"]
+
+            if answer_type == "yes/no":
+                yes_no_total += 1
+                pred_yn = self._normalize_yes_no(pred)
+                gt_yn = self._normalize_yes_no(gt)
+
+                if pred_yn is not None and pred_yn == gt_yn:
+                    yes_no_correct += 1
+
+                if pred_yn == "yes" and gt_yn == "yes":
+                    true_positive += 1
+                elif pred_yn == "yes" and gt_yn != "yes":
+                    false_positive += 1
+                elif pred_yn != "yes" and gt_yn == "yes":
+                    false_negative += 1
+
+            elif answer_type == "other":
+                other_total += 1
+                other_f1_sum += self._token_f1(pred, gt)
+                other_em_sum += self._normalized_em(pred, gt)
+
+        yes_no_acc = yes_no_correct / yes_no_total * 100 if yes_no_total else 0.0
+        denom = 2 * true_positive + false_positive + false_negative
+        yes_no_f1 = 2 * true_positive / denom * 100 if denom else 0.0
+        other_token_f1 = other_f1_sum / other_total * 100 if other_total else 0.0
+        other_norm_em = other_em_sum / other_total * 100 if other_total else 0.0
+
+        metrics = {
+            "agg_metrics": (yes_no_f1 + other_token_f1) / 2,
+            "yes_no_acc": yes_no_acc,
+            "yes_no_f1": yes_no_f1,
+            "other_token_f1": other_token_f1,
+            "other_norm_em": other_norm_em,
+            "yes_no_count": yes_no_total,
+            "other_count": other_total,
+            "total_count": yes_no_total + other_total,
+        }
+
+        with open(os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a") as f:
             f.write(json.dumps(metrics) + "\n")
 
         logging.info(metrics)

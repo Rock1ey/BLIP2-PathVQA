@@ -22,7 +22,7 @@ datasets:
         storage: /root/autodl-tmp/pvqa/images
 
 run:
-  task: gqa
+  task: path_vqa
   batch_size_train: 16
   batch_size_eval: 16
   num_workers: 4
@@ -31,7 +31,7 @@ run:
   min_len: 1
   num_beams: 5
   inference_method: "generate"
-  prompt: "Question: {} Short answer:"
+  prompt: ""
 
   seed: 42
   output_dir: "output/BLIP2/PathVQA_zeroshot_flant5xl"

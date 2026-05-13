@@ -36,7 +36,7 @@ datasets:
         storage: /root/autodl-tmp/pvqa/images
 
 run:
-  task: gqa
+  task: path_vqa
   lr_sched: "linear_warmup_cosine_lr"
   init_lr: 1e-5
   min_lr: 0
@@ -53,7 +53,7 @@ run:
   min_len: 1
   num_beams: 5
   inference_method: "generate"
-  prompt: "Question: {} Short answer:"
+  prompt: ""
 
   seed: 42
   output_dir: "output/BLIP2/PathVQA_ft_flant5xl"

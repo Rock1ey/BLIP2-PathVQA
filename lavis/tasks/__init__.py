@@ -1,6 +1,6 @@
 from lavis.common.registry import registry
 from lavis.tasks.base_task import BaseTask
-from lavis.tasks.vqa import GQATask, VQATask
+from lavis.tasks.vqa import GQATask, PathVQATask, VQATask
 
 
 def setup_task(cfg):
@@ -16,5 +16,6 @@ def setup_task(cfg):
 __all__ = [
     "BaseTask",
     "GQATask",
+    "PathVQATask",
     "VQATask",
 ]
