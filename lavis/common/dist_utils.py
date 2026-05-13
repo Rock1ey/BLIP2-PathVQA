@@ -124,11 +124,19 @@ def download_cached_file(url, check_hash=True, progress=False):
         # a hack to sync the file path across processes
         parts = torch.hub.urlparse(url)
         filename = os.path.basename(parts.path)
+
+        local_cache_dir = os.environ.get("LAVIS_MODEL_CACHE")
+        if local_cache_dir:
+            local_cached_file = os.path.join(local_cache_dir, filename)
+            if os.path.isfile(local_cached_file):
+                return local_cached_file
+
         cached_file = os.path.join(timm_hub.get_cache_dir(), filename)
 
         return cached_file
 
-    if is_main_process():
+    cached_file = get_cached_file_path()
+    if is_main_process() and not os.path.isfile(cached_file):
         timm_hub.download_cached_file(url, check_hash, progress)
 
     if is_dist_avail_and_initialized():
