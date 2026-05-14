@@ -43,7 +43,7 @@ run:
   warmup_lr: 1e-8
   warmup_steps: 500
   weight_decay: 0.05
-  max_epoch: 5
+  max_epoch: 10 # 5
   batch_size_train: 4
   batch_size_eval: 16
   num_workers: 4
@@ -56,10 +56,12 @@ run:
   prompt: ""
 
   seed: 42
-  output_dir: "output/BLIP2/PathVQA_ft_flant5xl"
+  # output_dir: "output/BLIP2/PathVQA_ft_flant5xl"
+  output_dir: "output/BLIP2/PathVQA_ft_flant5xl_resume"
 
   amp: True
-  resume_ckpt_path: null
+  # resume_ckpt_path: null
+  resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl/20260513214/checkpoint_best.pth
 
   evaluate: False
   train_splits: ["train"]

@@ -646,7 +646,16 @@ class RunnerBase:
             raise RuntimeError("checkpoint url or path is invalid")
 
         state_dict = checkpoint["model"]
-        self.unwrap_dist_model(self.model).load_state_dict(state_dict)
+        try:
+            self.unwrap_dist_model(self.model).load_state_dict(state_dict)
+        except RuntimeError:
+            logging.warning(
+                """
+                Key mismatch when resuming checkpoint. This is expected if only trainable
+                parameters were saved. Trying to load the model with strict=False.
+                """
+            )
+            self.unwrap_dist_model(self.model).load_state_dict(state_dict, strict=False)
 
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         if self.scaler and "scaler" in checkpoint:
