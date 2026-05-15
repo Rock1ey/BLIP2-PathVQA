@@ -34,6 +34,11 @@ Provide a short and concise medical answer.
 Question: {question}
 Answer:"""
 
+GENERIC_PROMPT = """Question: {question}
+Answer:"""
+
+SHORT_ANSWER_PROMPT = "Question: {question} Short answer:"
+
 
 def _load_pathvqa_annotations(ann_paths):
     annotations = []
@@ -70,19 +75,41 @@ def _normalize_yes_no_answer(answer):
     return answer
 
 
-def _format_prompt(question, answer_type):
+def _format_prompt(question, answer_type, prompt_mode="typed"):
     question = question.strip()
+
+    if prompt_mode == "raw":
+        return question
+    if prompt_mode == "generic":
+        return GENERIC_PROMPT.format(question=question)
+    if prompt_mode == "short_answer":
+        return SHORT_ANSWER_PROMPT.format(question=question)
+    if prompt_mode != "typed":
+        raise ValueError(
+            "Unsupported PathVQA prompt_mode '{}'. Use one of: typed, raw, generic, short_answer.".format(
+                prompt_mode
+            )
+        )
+
     if answer_type == "yes/no":
         return YES_NO_PROMPT.format(question=question)
     return OTHER_PROMPT.format(question=question)
 
 
 class PathVQADataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
+    def __init__(
+        self,
+        vis_processor,
+        text_processor,
+        vis_root,
+        ann_paths,
+        prompt_mode="typed",
+    ):
         self.vis_root = vis_root
         self.annotation = _load_pathvqa_annotations(ann_paths)
         self.vis_processor = vis_processor
         self.text_processor = text_processor
+        self.prompt_mode = prompt_mode
         self._add_instance_ids()
 
     def _image_path(self, img_id):
@@ -103,7 +130,9 @@ class PathVQADataset(BaseDataset):
 
         return {
             "image": image,
-            "text_input": _format_prompt(raw_question, answer_type),
+            "text_input": _format_prompt(
+                raw_question, answer_type, prompt_mode=self.prompt_mode
+            ),
             "text_output": random.choice(answers),
             "answers": answers,
             "weights": [1.0] * len(answers),
@@ -130,7 +159,9 @@ class PathVQAEvalDataset(PathVQADataset):
 
         return {
             "image": image,
-            "text_input": _format_prompt(raw_question, answer_type),
+            "text_input": _format_prompt(
+                raw_question, answer_type, prompt_mode=self.prompt_mode
+            ),
             "answer": answers[0],
             "answer_type": answer_type,
             "raw_question": raw_question,

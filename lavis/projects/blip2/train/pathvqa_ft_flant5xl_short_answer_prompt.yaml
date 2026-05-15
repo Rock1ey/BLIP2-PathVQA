@@ -9,7 +9,7 @@ model:
 
 datasets:
   path_vqa:
-    prompt_mode: "typed"
+    prompt_mode: "short_answer"
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -44,7 +44,7 @@ run:
   warmup_lr: 1e-8
   warmup_steps: 500
   weight_decay: 0.05
-  max_epoch: 20 # 5
+  max_epoch: 15
   batch_size_train: 4
   batch_size_eval: 16
   num_workers: 4
@@ -57,14 +57,10 @@ run:
   prompt: ""
 
   seed: 42
-  # output_dir: "output/BLIP2/PathVQA_ft_flant5xl"
-  output_dir: "output/BLIP2/PathVQA_ft_flant5xl_resume"
+  output_dir: "output/BLIP2/PathVQA_ft_flant5xl_short_answer_prompt"
 
   amp: True
-  # resume_ckpt_path: null
-  # resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl/20260513214/checkpoint_best.pth
-  # resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl_resume/20260514145/checkpoint_best.pth
-  resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl_resume/20260514202/checkpoint_best.pth
+  resume_ckpt_path: null
 
   evaluate: False
   train_splits: ["train"]

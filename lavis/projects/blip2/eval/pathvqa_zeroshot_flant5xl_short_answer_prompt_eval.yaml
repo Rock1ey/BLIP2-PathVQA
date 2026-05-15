@@ -6,7 +6,7 @@ model:
 
 datasets:
   path_vqa:
-    prompt_mode: "typed"
+    prompt_mode: "short_answer"
     vis_processor:
       eval:
         name: "blip_image_eval"
@@ -35,7 +35,7 @@ run:
   prompt: ""
 
   seed: 42
-  output_dir: "output/BLIP2/PathVQA_zeroshot_flant5xl"
+  output_dir: "output/BLIP2/PathVQA_zeroshot_flant5xl_short_answer_prompt"
 
   evaluate: True
   test_splits: ["test"]
