@@ -16,23 +16,14 @@ Images are expected under <vis_root>/<split>/<img_id>.jpg.
 import os
 import pickle
 import random
+import string
 
 from PIL import Image
 
 from lavis.datasets.datasets.base_dataset import BaseDataset
 
 
-YES_NO_PROMPT = """Answer the medical question according to the pathology image.
-Please answer only "yes" or "no".
-
-Question: {question}
-Answer:"""
-
-OTHER_PROMPT = """Answer the medical visual question according to the pathology image.
-Provide a short and concise medical answer.
-
-Question: {question}
-Answer:"""
+SHORT_ANSWER_PROMPT = "Question: {question} Short answer:"
 
 
 def _load_pathvqa_annotations(ann_paths):
@@ -63,18 +54,16 @@ def _answers_from_label(label):
 
 def _normalize_yes_no_answer(answer):
     answer = answer.strip().lower()
-    if answer.startswith("yes"):
-        return "yes"
-    if answer.startswith("no"):
-        return "no"
+    answer = answer.strip(string.whitespace + string.punctuation)
+    tokens = answer.split()
+    if tokens and tokens[0] in {"yes", "no"}:
+        return tokens[0]
     return answer
 
 
 def _format_prompt(question, answer_type):
     question = question.strip()
-    if answer_type == "yes/no":
-        return YES_NO_PROMPT.format(question=question)
-    return OTHER_PROMPT.format(question=question)
+    return SHORT_ANSWER_PROMPT.format(question=question)
 
 
 class PathVQADataset(BaseDataset):

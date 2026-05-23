@@ -56,14 +56,10 @@ run:
   prompt: ""
 
   seed: 42
-  # output_dir: "output/BLIP2/PathVQA_ft_flant5xl"
-  output_dir: "output/BLIP2/PathVQA_ft_flant5xl_resume"
+  output_dir: "output/BLIP2/PathVQA_ft_flant5xl_short_answer"
 
   amp: True
-  # resume_ckpt_path: null
-  # resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl/20260513214/checkpoint_best.pth
-  # resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl_resume/20260514145/checkpoint_best.pth
-  resume_ckpt_path: /root/BLIP2-PathVQA/lavis/output/BLIP2/PathVQA_ft_flant5xl_resume/20260514202/checkpoint_best.pth
+  resume_ckpt_path: null
 
   evaluate: False
   train_splits: ["train"]
@@ -71,6 +67,6 @@ run:
   test_splits: ["test"]
 
   device: "cuda"
-  world_size: 1
+  world_size: 2
   dist_url: "env://"
   distributed: True

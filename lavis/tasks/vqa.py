@@ -458,7 +458,7 @@ class PathVQATask(VQATask):
 
     @staticmethod
     def _normalize_text(text):
-        text = text.lower()
+        text = str(text).lower()
         text = "".join(ch if ch not in string.punctuation else " " for ch in text)
         text = re.sub(r"\b(a|an|the)\b", " ", text)
         return " ".join(text.split())
@@ -488,12 +488,14 @@ class PathVQATask(VQATask):
 
     @staticmethod
     def _normalize_yes_no(text):
-        normalized = text.strip().lower()
+        normalized = str(text).strip().lower()
         normalized = normalized.strip(string.whitespace + string.punctuation)
-        if normalized.startswith("yes"):
-            return "yes"
-        if normalized.startswith("no"):
-            return "no"
+        normalized = "".join(
+            ch if ch not in string.punctuation else " " for ch in normalized
+        )
+        tokens = normalized.split()
+        if tokens and tokens[0] in {"yes", "no"}:
+            return tokens[0]
         return None
 
     @dist_utils.main_process

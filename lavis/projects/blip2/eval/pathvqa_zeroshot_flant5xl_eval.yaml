@@ -34,12 +34,12 @@ run:
   prompt: ""
 
   seed: 42
-  output_dir: "output/BLIP2/PathVQA_zeroshot_flant5xl"
+  output_dir: "output/BLIP2/PathVQA_zeroshot_flant5xl_short_answer"
 
   evaluate: True
   test_splits: ["test"]
 
   device: "cuda"
-  world_size: 1
+  world_size: 2
   dist_url: "env://"
   distributed: True
